@@ -1,5 +1,5 @@
 import Comete._
-import p._
+import Opinion._
 
 val pi_max = Vector(0.5, 0.0, 0.0, 0.0, 0.5)
 val pi_min = Vector(0.0, 0.0, 1.0, 0.0, 0.0)

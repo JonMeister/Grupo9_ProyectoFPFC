@@ -11,11 +11,7 @@ package object Opinion {
   // Si existe i: b(i) <0 o b(i) > 1 b esta mal definida.
   // Para i en Int A, b(i) no tiene sentido
 
-  /**
-   * type GenericBelief = Int => SpecificBeliefConf
-   *
-   * Esta type todavía no se usa, SpecificBeliefConf no está definido
-   */
+  type GenericBeliefConf = Int => SpecificBelief
   // si gb:GenericBelief , entonces gb(n) = b
   // tal que b: SpecificBelief
   // es el tipo de las funciones generadoras de creencias
@@ -120,27 +116,6 @@ package object Opinion {
   type GenericWeightedGraph = Int => SpecificWeightedGraph
   type FunctionUpdate = (SpecificBelief,SpecificWeightedGraph)=> SpecificBelief
 
-  def i1(nags: Int): SpecificWeightedGraph = {
-    (
-      (i: Int, j: Int) =>
-        if (i == j) 1.0
-        else if (i < j) 1.0 / (j - i).toDouble
-        else 0.0,
-      nags
-    )
-  }
-  def i2(nags:Int): SpecificWeightedGraph ={
-    ((i:Int, j:Int ) => if (i==j) 1.0
-    else if(i<j) (j-i).toDouble / nags.toDouble
-    else (nags-(i-j)).toDouble / nags.toDouble,nags)
-  }
-  val i1_10=i1(10)
-  val i2_10=i2(10)
-  val i1_20=i1(20)
-  val i2_20=i2(20)
-
-  v
-
   // Función showWeightedGraph
   def showWeightedGraph(swg: SpecificWeightedGraph): IndexedSeq[IndexedSeq[Double]] = {
     val (wg, nags) = swg
@@ -177,15 +152,6 @@ package object Opinion {
         }
       }.toVector
   }
-  val sbu_10 = uniformBelief(10)
-  confBiasUpdate(sbu_10,i1_10)
-  rho1(sbu_10,dist1)
-  rho1(confBiasUpdate(sbu_10,i1_10),dist1)
-
-  val sbm_10 = midlyBelief(10)
-  confBiasUpdate(sbm_10 , i1_10)
-  rho1 (sbm_10 , dist1)
-  rho1 (confBiasUpdate ( sbm_10 , i1_10) , dist1 )
 
   def simulate (fu : FunctionUpdate,swg : SpecificWeightedGraph,b0 : SpecificBelief,t : Int) : IndexedSeq [SpecificBelief ] = {
     // Generar la secuencia de creencias a lo largo del tiempo
@@ -194,26 +160,5 @@ package object Opinion {
       beliefs :+ fu(lastBelief, swg)
     }
   }
-
-  val sb_ext=allExtremeBelief(100)
-  val sb_cons = consensusBelief(0.2)(100)
-  val sb_unif = uniformBelief(100)
-  val sb_triple = allTripleBelief (100)
-  val sb_midly = midlyBelief(100)
-  val rho1 = rho (1.2 , 1.2)
-  val rho2 = rho (2.0 , 1.0)
-  val dist1 = Vector (0.0 , 0.25,0.50,0.75, 1.0)
-  rho1(sb_cons, dist1 )
-  rho1 ( sb_cons , dist1 )
-  rho2 ( sb_cons , dist1 )
-  rho1 ( sb_unif , dist1 )
-  rho2 ( sb_unif,dist1 )
-  for {
-    b <- simulate(confBiasUpdate, i1_10, sbu_10, 2)
-  } yield (b, rho1(b, dist1))
-  for {
-    b <- simulate(confBiasUpdate, i1_10, sbm_10, 2)
-  } yield (b, rho1(b, dist1))
-
 
 }

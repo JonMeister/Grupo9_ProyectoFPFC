@@ -114,10 +114,106 @@ package object Opinion {
       normalizedCometeMeasure(beliefDistribution)
     }
   }
+  // Tipos para Modelar la evolucion de la opinion en una red
+  type WeightedGraph = (Int,Int) => Double
+  type SpecificWeightedGraph = (WeightedGraph,Int)
+  type GenericWeightedGraph = Int => SpecificWeightedGraph
+  type FunctionUpdate = (SpecificBelief,SpecificWeightedGraph)=> SpecificBelief
+
+  def i1(nags: Int): SpecificWeightedGraph = {
+    (
+      (i: Int, j: Int) =>
+        if (i == j) 1.0
+        else if (i < j) 1.0 / (j - i).toDouble
+        else 0.0,
+      nags
+    )
+  }
+  def i2(nags:Int): SpecificWeightedGraph ={
+    ((i:Int, j:Int ) => if (i==j) 1.0
+    else if(i<j) (j-i).toDouble / nags.toDouble
+    else (nags-(i-j)).toDouble / nags.toDouble,nags)
+  }
+  val i1_10=i1(10)
+  val i2_10=i2(10)
+  val i1_20=i1(20)
+  val i2_20=i2(20)
+
+  v
+
+  // Función showWeightedGraph
+  def showWeightedGraph(swg: SpecificWeightedGraph): IndexedSeq[IndexedSeq[Double]] = {
+    val (wg, nags) = swg
+    for (i <- 0 until nags) yield { // Itera sobre los agentes como filas
+      for (j <- 0 until nags) yield { // Itera sobre los agentes como columnas
+        wg(i, j) // Evalúa la función de influencia para cada par (i, j)
+      }
+    }
+  }
+
+  def confBiasUpdate(sb: SpecificBelief, swg: SpecificWeightedGraph): SpecificBelief = {
+    val (wg, nags) = swg // Grafo ponderado y número de agentes
+
+    // Para cada agente `i`, calcula la nueva creencia
+    (0 until nags).map { i =>
+        // Filtrar los vecinos relevantes
+        val vecinosRelevantes = (0 until nags).filter(j => wg(j, i) > 0)
+
+        // Si no hay vecinos relevantes, se mantiene la creencia original
+        if (vecinosRelevantes.isEmpty) {
+          sb(i)
+        } else {
+          // Calcula el numerador (b(j) - b(i)) ponderado por los pesos
+          val numerador = vecinosRelevantes.foldLeft(0.0) { (acc, j) =>
+            val beta = 1 - math.abs(sb(j) - sb(i)) // Bi,j
+            acc + wg(j, i) * beta * (sb(j) - sb(i))
+          }
+
+          // El denominador es el número de vecinos relevantes
+          val denominador = vecinosRelevantes.size.toDouble
+
+          // Calcula la nueva creencia
+          sb(i) + numerador / denominador
+        }
+      }.toVector
+  }
+  val sbu_10 = uniformBelief(10)
+  confBiasUpdate(sbu_10,i1_10)
+  rho1(sbu_10,dist1)
+  rho1(confBiasUpdate(sbu_10,i1_10),dist1)
+
+  val sbm_10 = midlyBelief(10)
+  confBiasUpdate(sbm_10 , i1_10)
+  rho1 (sbm_10 , dist1)
+  rho1 (confBiasUpdate ( sbm_10 , i1_10) , dist1 )
+
+  def simulate (fu : FunctionUpdate,swg : SpecificWeightedGraph,b0 : SpecificBelief,t : Int) : IndexedSeq [SpecificBelief ] = {
+    // Generar la secuencia de creencias a lo largo del tiempo
+    (0 to t).foldLeft(IndexedSeq(b0)) { (beliefs, _) =>
+      val lastBelief = beliefs.last
+      beliefs :+ fu(lastBelief, swg)
+    }
+  }
 
   val sb_ext=allExtremeBelief(100)
   val sb_cons = consensusBelief(0.2)(100)
   val sb_unif = uniformBelief(100)
   val sb_triple = allTripleBelief (100)
   val sb_midly = midlyBelief(100)
+  val rho1 = rho (1.2 , 1.2)
+  val rho2 = rho (2.0 , 1.0)
+  val dist1 = Vector (0.0 , 0.25,0.50,0.75, 1.0)
+  rho1(sb_cons, dist1 )
+  rho1 ( sb_cons , dist1 )
+  rho2 ( sb_cons , dist1 )
+  rho1 ( sb_unif , dist1 )
+  rho2 ( sb_unif,dist1 )
+  for {
+    b <- simulate(confBiasUpdate, i1_10, sbu_10, 2)
+  } yield (b, rho1(b, dist1))
+  for {
+    b <- simulate(confBiasUpdate, i1_10, sbm_10, 2)
+  } yield (b, rho1(b, dist1))
+
+
 }

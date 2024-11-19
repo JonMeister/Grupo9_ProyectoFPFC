@@ -46,6 +46,7 @@ val sb_cons = consensusBelief(0.2)(100)
 val sb_unif = uniformBelief(100)
 val sb_triple = allTripleBelief (100)
 val sb_midly = midlyBelief(100)
+
 val rho1 = rho(1.2, 1.2)
 val rho2 = rho(2.0 ,1.0)
 val dist1 = Vector(0.0, 0.25, 0.50, 0.75, 1.0)
@@ -109,3 +110,4 @@ for {
 for {
   b <- simulate(confBiasUpdate, i1_10, sbm_10, 2)
 } yield (b, rho1(b, dist1))
+

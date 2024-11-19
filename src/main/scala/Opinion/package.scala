@@ -11,7 +11,6 @@ package object Opinion {
   // Si existe i: b(i) <0 o b(i) > 1 b esta mal definida.
   // Para i en Int A, b(i) no tiene sentido
 
-
   type GenericBeliefConf = Int => SpecificBelief
   // si gb:GenericBelief , entonces gb(n) = b
   // tal que b: SpecificBelief

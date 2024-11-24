@@ -1,4 +1,5 @@
 import Comete._
+import scala.collection.parallel.CollectionConverters._
 
 package object Opinion {
 
@@ -110,6 +111,7 @@ package object Opinion {
       normalizedCometeMeasure(beliefDistribution)
     }
   }
+
   // Tipos para Modelar la evolucion de la opinion en una red
   type WeightedGraph = (Int,Int) => Double
   type SpecificWeightedGraph = (WeightedGraph,Int)
@@ -161,4 +163,49 @@ package object Opinion {
     }
   }
 
+  //Versiones Paralelas
+
+  def rhoPar(alpha: Double, beta: Double): AgentsPolMeasure = {
+    (specificBelief: SpecificBelief, distributionValues: DistributionValues) => {
+      val totalAgents = specificBelief.length
+      val emptyFrequencies = Vector.fill(distributionValues.length)(0.0)
+
+      // Usamos paralelo para calcular frecuencias
+      val rawFrequencies = specificBelief.par.aggregate(emptyFrequencies)(
+        (freq, agentBelief) => {
+          val closestValueIndex = distributionValues.indices.minBy { index =>
+            math.abs(distributionValues(index) - agentBelief)
+          }
+          freq.updated(closestValueIndex, freq(closestValueIndex) + 1.0)
+        },
+        (freq1, freq2) => freq1.zip(freq2).map { case (a, b) => a + b }
+      )
+
+      val normalizedFrequencies = rawFrequencies.map(_ / totalAgents)
+      val beliefDistribution = (normalizedFrequencies, distributionValues)
+
+      val baseCometeMeasure = Comete.rhoCMT_Gen(alpha, beta)
+      val normalizedCometeMeasure = Comete.normalizar(baseCometeMeasure)
+
+      normalizedCometeMeasure(beliefDistribution)
+    }
+  }
+
+  def confBiasUpdatePar(sb: SpecificBelief, swg: SpecificWeightedGraph): SpecificBelief = {
+    val (wg, nags) = swg
+
+    (0 until nags).par.map { i =>
+      val vecinosRelevantes = (0 until nags).filter(j => wg(j, i) > 0)
+      if (vecinosRelevantes.isEmpty) {
+        sb(i)
+      } else {
+        val numerador = vecinosRelevantes.par.foldLeft(0.0) { (acc, j) =>
+          val beta = 1 - math.abs(sb(j) - sb(i))
+          acc + wg(j, i) * beta * (sb(j) - sb(i))
+        }
+        val denominador = vecinosRelevantes.size.toDouble
+        sb(i) + numerador / denominador
+      }
+    }.toVector
+  }
 }

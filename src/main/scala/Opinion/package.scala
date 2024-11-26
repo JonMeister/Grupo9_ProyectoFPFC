@@ -1,5 +1,6 @@
 import Comete._
 import scala.collection.parallel.CollectionConverters._
+import common._
 
 package object Opinion {
 
@@ -24,7 +25,7 @@ package object Opinion {
   // rho(sb ,d) es la polarizacion de los agentes
   // de acuerdo a esa medida
 
-  //Build uniform belief state
+/*  //Build uniform belief state
   def uniformBelief(nags:Int):SpecificBelief = {
     Vector.tabulate(nags)((i:Int) => (i+1).toDouble/nags.toDouble)
   }
@@ -63,7 +64,7 @@ package object Opinion {
   // all agents have same belief.
   def consensusBelief(b:Double)(nags: Int ): SpecificBelief = {
     Vector.tabulate(nags)((i:Int) => b)
-  }
+  }*/
 
   /**
    * @param alpha Parámetro que controla la sensibilidad a la masa de cada grupo (típicamente entre 1.0 y 2.0)
@@ -130,7 +131,6 @@ package object Opinion {
 
   def confBiasUpdate(sb: SpecificBelief, swg: SpecificWeightedGraph): SpecificBelief = {
     val (wg, nags) = swg // Grafo ponderado y número de agentes
-
     // Para cada agente `i`, calcula la nueva creencia
     (0 until nags).map { i =>
         // Filtrar los vecinos relevantes
@@ -191,21 +191,21 @@ package object Opinion {
     }
   }
 
-  def confBiasUpdatePar(sb: SpecificBelief, swg: SpecificWeightedGraph): SpecificBelief = {
-    val (wg, nags) = swg
+   def confBiasUpdatePar(sb: SpecificBelief, swg: SpecificWeightedGraph): SpecificBelief = {
+      val (wg, nags) = swg
 
-    (0 until nags).par.map { i =>
-      val vecinosRelevantes = (0 until nags).filter(j => wg(j, i) > 0)
-      if (vecinosRelevantes.isEmpty) {
-        sb(i)
-      } else {
-        val numerador = vecinosRelevantes.par.foldLeft(0.0) { (acc, j) =>
-          val beta = 1 - math.abs(sb(j) - sb(i))
-          acc + wg(j, i) * beta * (sb(j) - sb(i))
+      (0 until nags).par.map { i =>
+        val vecinosRelevantes = (0 until nags).filter(j => wg(j, i) > 0)
+        if (vecinosRelevantes.isEmpty) {
+          sb(i)
+        } else {
+          val numerador = vecinosRelevantes.par.foldLeft(0.0) { (acc, j) =>
+            val beta = 1 - math.abs(sb(j) - sb(i))
+            acc + wg(j, i) * beta * (sb(j) - sb(i))
+          }
+          val denominador = vecinosRelevantes.size.toDouble
+          sb(i) + numerador / denominador
         }
-        val denominador = vecinosRelevantes.size.toDouble
-        sb(i) + numerador / denominador
-      }
-    }.toVector
-  }
+      }.toVector
+    }
 }

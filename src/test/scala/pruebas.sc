@@ -1,5 +1,6 @@
 import Comete._
 import Opinion._
+import Benchmark._
 
 val pi_max = Vector(0.5, 0.0, 0.0, 0.0, 0.5)
 val pi_min = Vector(0.0, 0.0, 1.0, 0.0, 0.0)
@@ -153,3 +154,26 @@ rhoPar1(confBiasUpdatePar(sbu_10,i1_10),distP1)
 confBiasUpdatePar(sbm_10 , i1_10)
 rhoPar1 (sbm_10 , distP1)
 rhoPar1 (confBiasUpdatePar ( sbm_10 , i1_10) , distP1 )
+
+val likert5 = Vector(0.0, 0.25, 0.5, 0.75, 1.0)
+
+val sbms = for {
+  n <-2 until 16
+  nags = math.pow(2, n).toInt
+} yield midlyBelief(nags)
+
+val polSec = rho(1.2, 1.2)
+val polPar = rhoPar(1.2, 1.2)
+
+val cmp1 = compararMedidasPol(sbms, likert5, polSec, polPar)
+
+
+val i1_32768 = i1(32768)
+val i2_32768 = i2(32768)
+
+compararFuncionesAct(
+  sbms.take(sbms.length / 2),
+  i2_32768,
+  confBiasUpdate,
+  confBiasUpdatePar
+)

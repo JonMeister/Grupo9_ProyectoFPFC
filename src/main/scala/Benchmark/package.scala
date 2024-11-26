@@ -1,6 +1,5 @@
-/*
-//import Comete.DistributionValues
-//import Opinion._
+import Comete.DistributionValues
+import Opinion._
 import org.scalameter._
 import plotly._
 import layout._
@@ -135,5 +134,9 @@ package object Benchmark {
     plotSim.plot("simulEvol.html", laySimSeq)
     evolPols
   }
+  val sbms = for {
+    n <-2 until 16
+    nags = math.pow(2, n).toInt
+  } yield midlyBelief(nags)
 }
-*/
+

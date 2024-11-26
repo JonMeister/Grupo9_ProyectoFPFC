@@ -65,5 +65,4 @@ package object Comete {
       polarization / worstCasePolarization
     }
   }
-
 }

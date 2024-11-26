@@ -111,3 +111,45 @@ for {
   b <- simulate(confBiasUpdate, i1_10, sbm_10, 2)
 } yield (b, rho1(b, dist1))
 
+//rhoPar
+
+val rhoPar1 = rhoPar(1.2, 1.2)
+val rhoPar2 = rhoPar(2.0, 1.0)
+
+val distP1 = Vector(0.0, 0.25, 0.50, 0.75, 1.0)
+val distP2 = Vector(0.0, 0.2, 0.4, 0.6, 0.8, 1.0)
+
+rhoPar1(sb_ext, distP1)
+rhoPar2(sb_ext, distP1)
+rhoPar1(sb_ext, distP2)
+rhoPar2(sb_ext, distP2)
+
+rhoPar1(sb_cons, distP1)
+rhoPar2(sb_cons, distP1)
+rhoPar1(sb_cons, distP2)
+rhoPar2(sb_cons, distP2)
+
+rhoPar1(sb_unif, distP1)
+rhoPar2(sb_unif, distP1)
+rhoPar1(sb_unif, distP2)
+rhoPar2(sb_unif, distP2)
+
+rhoPar1(sb_triple, distP1)
+rhoPar2(sb_triple, distP1)
+rhoPar1(sb_triple, distP2)
+rhoPar2(sb_triple, distP2)
+
+rhoPar1(sb_midly, distP1)
+rhoPar2(sb_midly, distP1)
+rhoPar1(sb_midly, distP2)
+rhoPar2(sb_midly, distP2)
+
+//confBiasUpdatePar
+
+confBiasUpdatePar(sbu_10,i1_10)
+rhoPar1(sbu_10,distP1)
+rhoPar1(confBiasUpdatePar(sbu_10,i1_10),distP1)
+
+confBiasUpdatePar(sbm_10 , i1_10)
+rhoPar1 (sbm_10 , distP1)
+rhoPar1 (confBiasUpdatePar ( sbm_10 , i1_10) , distP1 )

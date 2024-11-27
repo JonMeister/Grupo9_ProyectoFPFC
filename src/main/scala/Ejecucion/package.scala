@@ -11,12 +11,18 @@ object Ejecucion extends App {
   println(cmp1)
   println(cmp1.map(t=>t._6))
 
-  val i2_32768 = i2(32768)
+  val i2_32768 = i1(32768)
 
-  compararFuncionesAct(
+  def umbral(npuntos: Int): Int = {
+    // Si npuntos= 2^n, entonces el umbral será 2^(n/2)
+    math.pow(2, ((math.log(npuntos) / math.log(2)) / 2).toInt).toInt
+  }
+
+  val cmp2= compararFuncionesAct(
     sbms.take(sbms.length / 2),
     i2_32768,
     confBiasUpdate,
-    confBiasUpdatePar
+    (b, swg) => confBiasUpdatePar(b, swg)
   )
+  println(cmp2)
 }

@@ -87,6 +87,11 @@ package object Benchmark {
     } yield (b.length, p1, p2, t1, t2, t1.value/t2.value)
   }
 
+  def umbral(npuntos: Int): Int = {
+    // Si npuntos= 2^n, entonces el umbral será 2^(n/2)
+    math.pow(2, ((math.log(npuntos) / math.log(2)) / 2).toInt).toInt
+  }
+
   // Comparador de tiempos de funciones de actualizacion secuencial y paralela
   def compararFuncionesAct(sb:Seq[SpecificBelief], swg:SpecificWeightedGraph,
                            f1:FunctionUpdate, f2:FunctionUpdate) = {
@@ -101,6 +106,7 @@ package object Benchmark {
     // y t1/t2 es la aceleración de f2 con respecto a f1
     for {
       b <- sb
+      th=umbral(b.length)
       t1 = tiempoDe(f1(b,swg))
       t2 = tiempoDe(f2(b,swg))
     } yield (b.length, t1, t2, t1.value/t2.value)

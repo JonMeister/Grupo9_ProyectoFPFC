@@ -40,17 +40,14 @@ package object Comete {
 
       // Función auxiliar rho_aux que calcula la medida de polarización para un valor dado de p
       def rho_aux(p: Double): Double = {
-        var sum = 0.0
-        for (i <- frequencies.indices) {
-          val pi = frequencies(i)
-          val yi = values(i)
-          sum += math.pow(pi, alpha) * math.pow(math.abs(yi - p), beta)
-        }
-        sum
+        val terms = for {
+          (pi, yi) <- frequencies.zip(values)
+        } yield math.pow(pi, alpha) * math.pow(math.abs(yi - p), beta)
+        terms.sum
       }
 
       // Usamos la función min_p para encontrar el valor de p en [0, 1] que minimiza rho_aux
-      val p_final=min_p(rho_aux, 0.0, 1.0, 0.0000001)  // Precisión de 1e-6 para obtener una buena aproximación
+      val p_final=min_p(rho_aux, 0.0, 1.0, 0.000001)  // Precisión de 1e-6 para obtener una buena aproximación
       rho_aux(p_final)
     }
   }

@@ -130,7 +130,8 @@ package object Opinion {
   }
 
   def confBiasUpdate(sb: SpecificBelief, swg: SpecificWeightedGraph): SpecificBelief = {
-    val (wg, nags) = swg // Grafo ponderado y número de agentes
+    val (wg, _) = swg // Grafo ponderado y número de agentes
+    val nags=sb.length
     // Para cada agente `i`, calcula la nueva creencia
     (0 until nags).map { i =>
         // Filtrar los vecinos relevantes
@@ -191,21 +192,23 @@ package object Opinion {
     }
   }
 
-   def confBiasUpdatePar(sb: SpecificBelief, swg: SpecificWeightedGraph): SpecificBelief = {
-      val (wg, nags) = swg
+  def confBiasUpdatePar(sb: SpecificBelief, swg: SpecificWeightedGraph): SpecificBelief = {
+    val (wg, _) = swg
+    val nags=sb.length
 
-      (0 until nags).par.map { i =>
-        val vecinosRelevantes = (0 until nags).filter(j => wg(j, i) > 0)
-        if (vecinosRelevantes.isEmpty) {
-          sb(i)
-        } else {
-          val numerador = vecinosRelevantes.par.foldLeft(0.0) { (acc, j) =>
-            val beta = 1 - math.abs(sb(j) - sb(i))
-            acc + wg(j, i) * beta * (sb(j) - sb(i))
-          }
-          val denominador = vecinosRelevantes.size.toDouble
-          sb(i) + numerador / denominador
+    (0 until nags).par.map { i =>
+      val vecinosRelevantes = (0 until nags).filter(j => wg(j, i) > 0)
+      if (vecinosRelevantes.isEmpty) {
+        sb(i)
+      } else {
+        val numerador = vecinosRelevantes.par.foldLeft(0.0) { (acc, j) =>
+          val beta = 1 - math.abs(sb(j) - sb(i))
+          acc + wg(j, i) * beta * (sb(j) - sb(i))
         }
-      }.toVector
-    }
+        val denominador = vecinosRelevantes.size.toDouble
+        sb(i) + numerador / denominador
+      }
+    }.toVector
+  }
+
 }

@@ -91,10 +91,12 @@ def i2(nags:Int): SpecificWeightedGraph ={
 val i1_10=i1(10)
 val i2_10=i2(10)
 val i1_20=i1(20)
-val i2_20=i2(20)
+val i2_20=i2(4)
 
 showWeightedGraph(i1_10)
 showWeightedGraph(i2_10)
+showWeightedGraph(i2_20)
+
 val sbu_10 = uniformBelief(10)
 confBiasUpdate(sbu_10,i1_10)
 rho1(sbu_10,dist1)

@@ -1,6 +1,6 @@
 import Comete._
 import Opinion._
-import Benchmark._
+import Benchmark.{sbms, _}
 
 val pi_max = Vector(0.5, 0.0, 0.0, 0.0, 0.5)
 val pi_min = Vector(0.0, 0.0, 1.0, 0.0, 0.0)
@@ -179,3 +179,10 @@ compararFuncionesAct(
   confBiasUpdate,
   confBiasUpdatePar
 )
+
+val evolsSec = for {
+  i <- 0 until sbms.length
+}yield simEvolucion ( Seq ( sbms ( i ) , sbes(i) , sbts ( i ) ) ,
+  i2_32768 , 10 , polSec , confBiasUpdate , likert5 ,
+"Simulacion_Secuencial_" ++ i.toString ++ "-"++ sbms(i).length.toString)
+

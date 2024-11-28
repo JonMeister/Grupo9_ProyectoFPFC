@@ -158,7 +158,7 @@ package object Opinion {
 
   def simulate (fu : FunctionUpdate,swg : SpecificWeightedGraph,b0 : SpecificBelief,t : Int) : IndexedSeq [SpecificBelief ] = {
     // Generar la secuencia de creencias a lo largo del tiempo
-    (0 to t).foldLeft(IndexedSeq(b0)) { (beliefs, _) =>
+    (0 until t).foldLeft(IndexedSeq(b0)) { (beliefs, _) =>
       val lastBelief = beliefs.last
       beliefs :+ fu(lastBelief, swg)
     }

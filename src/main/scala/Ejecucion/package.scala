@@ -21,7 +21,6 @@ object Ejecucion extends App {
     "Simulacion Paralela " ++ i.toString ++ "-" ++ sbms(i).length.toString)
 
 
-  val i2_32768 = i2(32768)
 
   val evolsSec = for {
     i <- 0 until sbms.length

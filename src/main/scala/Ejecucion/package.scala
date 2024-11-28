@@ -11,8 +11,8 @@ object Ejecucion extends App {
   println(cmp1)
   */
 
-
   val i2_32768 = i2(32768)
+
 
   val evolsPar = for {
     i <- 0 until sbms.length

@@ -2,6 +2,7 @@ import Comete._
 import Opinion._
 import Benchmark.{sbms, _}
 
+//PRUEBAS PAQUETE COMETE
 val pi_max = Vector(0.5, 0.0, 0.0, 0.0, 0.5)
 val pi_min = Vector(0.0, 0.0, 1.0, 0.0, 0.0)
 val pi_der = Vector(0.4, 0.0, 0.0, 0.0, 0.6)
@@ -14,7 +15,6 @@ val pi_cons_der = Vector(0.0, 0.0, 0.0, 0.0, 1.0)
 val pi_cons_izq = Vector(1.0, 0.0, 0.0, 0.0, 0.0)
 
 val likert5 = Vector(0.0, 0.25, 0.5, 0.75, 1.0)
-
 
 val cmt1 = rhoCMT_Gen(1.2, 1.2)
 
@@ -42,6 +42,7 @@ cmt1_norm(pi_cons_centro, likert5)
 cmt1_norm(pi_cons_der, likert5)
 cmt1_norm(pi_cons_izq, likert5)
 
+//PRUEBAS ELEMENTOS ESTÁTICOS DEL MODELO
 val sb_ext=allExtremeBelief(100)
 val sb_cons = consensusBelief(0.2)(100)
 val sb_unif = uniformBelief(100)
@@ -73,7 +74,7 @@ rho2(sb_midly, dist1)
 rho1(sb_midly, dist2)
 rho2(sb_midly, dist2)
 
-// Dynamic Elements
+// PRUEBAS ELEMENTOS DINÁMICOS DEL MODELO
 def i1(nags: Int): SpecificWeightedGraph = {
   (
     (i: Int, j: Int) =>
@@ -99,8 +100,10 @@ showWeightedGraph(i2_20)
 
 val sbu_10 = uniformBelief(10)
 confBiasUpdate(sbu_10,i1_10)
+
 rho1(sbu_10,dist1)
 rho1(confBiasUpdate(sbu_10,i1_10),dist1)
+
 
 val sbm_10 = midlyBelief(10)
 confBiasUpdate(sbm_10 , i1_10)
@@ -114,6 +117,7 @@ for {
   b <- simulate(confBiasUpdate, i1_10, sbm_10, 2)
 } yield (b, rho1(b, dist1))
 
+//PRUEBAS PARALELIZACIÓN DE FUNCIONES
 //rhoPar
 
 val rhoPar1 = rhoPar(1.2, 1.2)

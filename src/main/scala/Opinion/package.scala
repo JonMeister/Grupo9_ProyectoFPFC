@@ -1,10 +1,12 @@
 import Comete._
+
 import scala.collection.parallel.CollectionConverters._
 import common._
+import jdk.jfr.Threshold
 
 package object Opinion {
 
-  type SpecificBelief= Vector[Double]
+  type SpecificBelief = Vector[Double]
   // Si b:SpecificBelief , para cada i en Int ,
   // b[ i ] es un numero entre 0 y 1
   // que indica cuanto cree el agente i
@@ -19,13 +21,13 @@ package object Opinion {
   // es el tipo de las funciones generadoras de creencias
 
   type AgentsPolMeasure =
-    ( SpecificBelief , DistributionValues) => Double
+    (SpecificBelief, DistributionValues) => Double
   // Si rho:AgentsPolMeasure y sb: SpecificBelief y
   // d:DistributionValues ,
   // rho(sb ,d) es la polarizacion de los agentes
   // de acuerdo a esa medida
 
-/*  //Build uniform belief state
+  /*  //Build uniform belief state
   def uniformBelief(nags:Int):SpecificBelief = {
     Vector.tabulate(nags)((i:Int) => (i+1).toDouble/nags.toDouble)
   }
@@ -68,14 +70,14 @@ package object Opinion {
 
   /**
    * @param alpha Parámetro que controla la sensibilidad a la masa de cada grupo (típicamente entre 1.0 y 2.0)
-   * @param beta Parámetro que controla la sensibilidad a la distancia entre creencias (típicamente entre 1.0 y 2.0)
+   * @param beta  Parámetro que controla la sensibilidad a la distancia entre creencias (típicamente entre 1.0 y 2.0)
    * @return Una función que calcula la polarización normalizada para una creencia específica y valores de distribución
    */
   def rho(alpha: Double, beta: Double): AgentsPolMeasure = {
     /**
      * Función interna que calcula la polarización para una creencia específica y valores de distribución.
      *
-     * @param specificBelief Vector de creencias de los agentes (valores entre 0 y 1)
+     * @param specificBelief     Vector de creencias de los agentes (valores entre 0 y 1)
      * @param distributionValues Vector de valores discretos para la distribución
      * @return Valor de polarización normalizado entre 0 (mínima) y 1 (máxima)
      */
@@ -114,10 +116,10 @@ package object Opinion {
   }
 
   // Tipos para Modelar la evolucion de la opinion en una red
-  type WeightedGraph = (Int,Int) => Double
-  type SpecificWeightedGraph = (WeightedGraph,Int)
+  type WeightedGraph = (Int, Int) => Double
+  type SpecificWeightedGraph = (WeightedGraph, Int)
   type GenericWeightedGraph = Int => SpecificWeightedGraph
-  type FunctionUpdate = (SpecificBelief,SpecificWeightedGraph)=> SpecificBelief
+  type FunctionUpdate = (SpecificBelief, SpecificWeightedGraph) => SpecificBelief
 
   // Función showWeightedGraph
   def showWeightedGraph(swg: SpecificWeightedGraph): IndexedSeq[IndexedSeq[Double]] = {
@@ -131,32 +133,32 @@ package object Opinion {
 
   def confBiasUpdate(sb: SpecificBelief, swg: SpecificWeightedGraph): SpecificBelief = {
     val (wg, _) = swg // Grafo ponderado y número de agentes
-    val nags=sb.length
+    val nags = sb.length
     // Para cada agente `i`, calcula la nueva creencia
     (0 until nags).map { i =>
-        // Filtrar los vecinos relevantes
-        val vecinosRelevantes = (0 until nags).filter(j => wg(j, i) > 0)
+      // Filtrar los vecinos relevantes
+      val vecinosRelevantes = (0 until nags).filter(j => wg(j, i) > 0)
 
-        // Si no hay vecinos relevantes, se mantiene la creencia original
-        if (vecinosRelevantes.isEmpty) {
-          sb(i)
-        } else {
-          // Calcula el numerador (b(j) - b(i)) ponderado por los pesos
-          val numerador = vecinosRelevantes.foldLeft(0.0) { (acc, j) =>
-            val beta = 1 - math.abs(sb(j) - sb(i)) // Bi,j
-            acc + wg(j, i) * beta * (sb(j) - sb(i))
-          }
-
-          // El denominador es el número de vecinos relevantes
-          val denominador = vecinosRelevantes.size.toDouble
-
-          // Calcula la nueva creencia
-          sb(i) + numerador / denominador
+      // Si no hay vecinos relevantes, se mantiene la creencia original
+      if (vecinosRelevantes.isEmpty) {
+        sb(i)
+      } else {
+        // Calcula el numerador (b(j) - b(i)) ponderado por los pesos
+        val numerador = vecinosRelevantes.foldLeft(0.0) { (acc, j) =>
+          val beta = 1 - math.abs(sb(j) - sb(i)) // Bi,j
+          acc + wg(j, i) * beta * (sb(j) - sb(i))
         }
-      }.toVector
+
+        // El denominador es el número de vecinos relevantes
+        val denominador = vecinosRelevantes.size.toDouble
+
+        // Calcula la nueva creencia
+        sb(i) + numerador / denominador
+      }
+    }.toVector
   }
 
-  def simulate (fu : FunctionUpdate,swg : SpecificWeightedGraph,b0 : SpecificBelief,t : Int) : IndexedSeq [SpecificBelief ] = {
+  def simulate(fu: FunctionUpdate, swg: SpecificWeightedGraph, b0: SpecificBelief, t: Int): IndexedSeq[SpecificBelief] = {
     // Generar la secuencia de creencias a lo largo del tiempo
     (0 until t).foldLeft(IndexedSeq(b0)) { (beliefs, _) =>
       val lastBelief = beliefs.last
@@ -211,4 +213,39 @@ package object Opinion {
     }.toVector
   }
 
+  /*VERSION USANDO PARALLEL (NO IMPLEMENTADA)
+
+  def confBiasUpdatePar(sb: SpecificBelief, swg: SpecificWeightedGraph): SpecificBelief = {
+    val (wg, _) = swg
+    val nags = sb.length
+    val threshold=Math.max(16,nags/4)
+
+    def updateBelief(start: Int, end: Int): Vector[Double] = {
+      if (end - start <= threshold) {
+        // Usando solo paralelización de datos
+        (start until end).par.map { i =>
+          val vecinosRelevantes = (0 until nags).filter(j => wg(j, i) > 0)
+          if (vecinosRelevantes.isEmpty) {
+            sb(i)
+          } else {
+            val numerador = vecinosRelevantes.par.foldLeft(0.0) { (acc, j) =>
+              val beta = 1 - math.abs(sb(j) - sb(i))
+              acc + wg(j, i) * beta * (sb(j) - sb(i))
+            }
+            val denominador = vecinosRelevantes.size.toDouble
+            sb(i) + numerador / denominador
+          }
+        }.toVector
+      } else {
+        // Usando paralelización de datos y tareas con parallel
+        val mid = start + (end - start) / 2
+        val (leftResult, rightResult) = parallel(
+          updateBelief(start, mid),
+          updateBelief(mid, end)
+        )
+        leftResult ++ rightResult
+      }
+    }
+    updateBelief(0,nags)
+  }*/
 }

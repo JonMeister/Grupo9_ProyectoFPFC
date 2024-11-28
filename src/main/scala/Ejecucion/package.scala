@@ -43,6 +43,5 @@ object Ejecucion extends App {
   compararFuncionesAct ( sbms.take ( sbms.length/ 2 ) ,i2_1048576, confBiasUpdate, confBiasUpdatePar )
 */
 
-  */
 
 }

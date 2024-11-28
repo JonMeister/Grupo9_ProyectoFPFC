@@ -144,5 +144,15 @@ package object Benchmark {
     n <-2 until 16
     nags = math.pow(2, n).toInt
   } yield midlyBelief(nags)
+
+  val sbes = for {
+    n <-2 until 16
+    nags = math.pow(2,n).toInt
+  } yield allExtremeBelief(nags)
+
+  val sbts = for {
+    n <-2 until 16
+    nags = math.pow(2,n).toInt
+  } yield allTripleBelief(nags)
 }
 
